@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="https://www.ixl.com/favicon.ico">
+    <title>IXL | Math, Language Arts, Science, Social</title>
+    <style>
+        @property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+        
+        /* Default RGB Background */
+        body { 
+            margin: 0; height: 100vh; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; 
+            font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; color: white; 
+            background: conic-gradient(from var(--angle), #ff0000, #00ff00, #0000ff, #ff0000); 
+            animation: rotateRGB 8s linear infinite; 
+        }
+
+        /* Purple Original Theme */
+        body.bg-original { 
+            background: linear-gradient(135deg, #4b0082, #9b30ff, #ff0000) !important; 
+            background-size: 400% 400% !important; 
+            animation: moveGradient 10s ease infinite !important; 
+        }
+
+        @keyframes rotateRGB { from { --angle: 0deg; } to { --angle: 360deg; } }
+        @keyframes moveGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        #toast-container { position: fixed; top: 20px; left: -450px; z-index: 9999; transition: left 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .toast { padding: 14px 28px; border-radius: 12px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2); font-size: 14px; background: rgba(40, 201, 64, 0.9); }
+
+        #clock-widget { margin-bottom: 25px; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(25px); padding: 15px 45px; border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.3); text-align: center; z-index: 2; cursor: pointer; }
+        
+        .bubble-container { width: 580px; height: 580px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(30px); border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.2); display: flex; justify-content: center; align-items: center; z-index: 1; }
+        .app-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
+        .app { text-align: center; cursor: pointer; transition: 0.3s; font-weight: bold; font-size: 13px; width: 90px; }
+        .app:hover { transform: scale(1.1); }
+        .icon { width: 60px; height: 60px; border-radius: 18px; display: flex; justify-content: center; align-items: center; margin: 0 auto 8px auto; font-weight: 900; box-shadow: 0 8px 15px rgba(0,0,0,0.3); border: 1px solid rgba(255, 255, 255, 0.4); }
+
+        /* OS Window System */
+        #os-window { 
+            display: none; position: fixed; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); width: 85%; height: 85%; 
+            background: white; z-index: 1000; border-radius: 20px; 
+            flex-direction: column; overflow: hidden; 
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5); 
+            transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s, border-radius 0.3s;
+            user-select: none;
+        }
+        #os-window.dragging { transition: none !important; }
+        #os-window.fullscreen { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; transform: none !important; border-radius: 0; }
+        
+        .window-header { height: 40px; background: #f3f3f3; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; color: #333; border-bottom: 1px solid #ddd; cursor: grab; }
+        .win-btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: none; }
+        
+        #iframe-overlay { display: none; position: absolute; top: 40px; left: 0; width: 100%; height: calc(100% - 40px); z-index: 1001; }
+        iframe { flex-grow: 1; border: none; width: 100%; height: 100%; }
+        
+        #settings-ui { display: none; padding: 30px; color: #333; text-align: center; overflow-y: auto; }
+        .set-btn { margin: 10px 0; padding: 12px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body id="os-body" onclick="startMusic()">
+
+<audio id="bg-music" loop preload="auto">
+    <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Kevin_MacLeod/Best_of_2014/Kevin_MacLeod_-_Monkeys_Spinning_Monkeys.mp3" type="audio/mpeg">
+</audio>
+
+<div id="toast-container"><div id="toast-msg" class="toast">Initializing Uplink...</div></div>
+
+<div id="clock-widget" onclick="startMusic()">
+    <div id="time-display" style="font-size: 42px; font-weight: 800;">00:00:00</div>
+    <div id="status-text" style="font-size: 14px; color: #00ffff; font-family: monospace;">WIFI: ACTIVE | CLICK FOR AUDIO</div>
+</div>
+
+<div class="bubble-container">
+    <div class="app-grid">
+        <div class="app" onclick="openApp('https://win11.blueedge.me')"><div class="icon" style="background:#0078d4">VM</div>Win 11</div>
+        <div class="app" onclick="openApp('https://calcsolver.net')"><div class="icon" style="background:#2196f3">Calc</div>Solver</div>
+        <div class="app" onclick="openApp('https://stemspaceclub.com')"><div class="icon" style="background:#4caf50">STEM</div>Club</div>
+        <div class="app" onclick="openApp('https://mcraft.fun')"><div class="icon" style="background:#795548">MC</div>MCraft</div>
+        <div class="app" onclick="openApp('https://filterbrowser.onrender.com')"><div class="icon" style="background:#ff5722">🌐</div>Browser</div>
+        <div class="app" onclick="runAutoProxy()"><div class="icon" style="background:#333">Py</div>Proxy</div>
+        <div class="app" style="grid-column: 2;" onclick="openSettings()"><div class="icon" style="background:#607d8b">⚙️</div>Settings</div>
+    </div>
+</div>
+
+<div id="os-window">
+    <div class="window-header" id="window-header">
+        <div style="display:flex; gap: 8px;">
+            <button class="win-btn" style="background:#ff5f57;" onclick="closeOS()"></button>
+            <button class="win-btn" style="background:#febc2e;"></button>
+            <button class="win-btn" style="background:#28c940;" onclick="toggleFullScreen()"></button>
+        </div>
+        <span style="font-size: 11px; font-weight: bold; color: #888;">IXL SECURE INTERFACE v6.7</span>
+        <div style="width: 50px;"></div>
+    </div>
+    <div id="iframe-overlay"></div>
+    <iframe id="os-frame"></iframe>
+    <div id="settings-ui">
+        <h2>Customization</h2>
+        <button class="set-btn" style="background: conic-gradient(red, green, blue, red);" onclick="setTheme('')">RGB BLEND</button>
+        <button class="set-btn" style="background: #4b0082;" onclick="setTheme('bg-original')">PURPLE THEME</button>
+        <hr>
+        <h3>Audio & Tools</h3>
+        <button class="set-btn" style="background: #2196f3;" onclick="startMusic()">RE-SYNC AUDIO</button>
+        <button class="set-btn" style="background: #333;" onclick="launchAboutBlank()">LAUNCH MIRROR MODE</button>
+        <p>Volume: <span id="vol-label">30%</span></p>
+        <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.3" oninput="updateVolume(this.value)" style="width:80%">
+        <hr>
+        <button class="set-btn" style="background: #f44336;" onclick="window.location.reload()">REBOOT SYSTEM</button>
+    </div>
+</div>
+
+<script>
+    const music = document.getElementById('bg-music');
+    const win = document.getElementById('os-window');
+    const header = document.getElementById('window-header');
+    const overlay = document.getElementById('iframe-overlay');
+
+    let isDragging = false;
+    let startX, startY, initialX, initialY;
+
+    // Fullscreen Toggle (Green Button)
+    function toggleFullScreen() {
+        win.classList.toggle('fullscreen');
+        if (!win.classList.contains('fullscreen')) {
+            win.style.top = '50%'; win.style.left = '50%'; win.style.transform = 'translate(-50%, -50%)';
+        }
+    }
+
+    // Theme Switcher
+    function setTheme(t) { document.getElementById('os-body').className = t; }
+
+    // Mirror Mode (Launch in about:blank)
+    function launchAboutBlank() {
+        const winPop = window.open('about:blank', '_blank');
+        if (winPop) { winPop.document.write(document.documentElement.outerHTML); winPop.document.close(); }
+    }
+
+    // Smooth Dragging Logic
+    header.addEventListener('pointerdown', (e) => {
+        if (e.target.tagName === 'BUTTON') return;
+        isDragging = true;
+        win.classList.add('dragging');
+        overlay.style.display = 'block';
+        const rect = win.getBoundingClientRect();
+        initialX = rect.left;
+        initialY = rect.top;
+        startX = e.clientX;
+        startY = e.clientY;
+        win.style.transform = 'none';
+        win.style.left = initialX + 'px';
+        win.style.top = initialY + 'px';
+        win.classList.remove('fullscreen');
+        header.setPointerCapture(e.pointerId);
+    });
+
+    header.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        win.style.left = (initialX + (e.clientX - startX)) + 'px';
+        win.style.top = (initialY + (e.clientY - startY)) + 'px';
+    });
+
+    header.addEventListener('pointerup', (e) => {
+        isDragging = false;
+        win.classList.remove('dragging');
+        overlay.style.display = 'none';
+        header.releasePointerCapture(e.pointerId);
+    });
+
+    function startMusic() {
+        music.play().catch(e => {});
+        document.getElementById('status-text').textContent = "WIFI: ACTIVE | AUDIO: ON";
+    }
+
+    function updateVolume(val) {
+        music.volume = val;
+        document.getElementById('vol-label').textContent = Math.round(val * 100) + "%";
+    }
+
+    function openApp(url) {
+        document.getElementById('os-frame').src = url;
+        document.getElementById('os-frame').style.display = 'block';
+        document.getElementById('settings-ui').style.display = 'none';
+        win.style.display = 'flex';
+        startMusic();
+    }
+
+    function openSettings() {
+        document.getElementById('os-frame').style.display = 'none';
+        document.getElementById('settings-ui').style.display = 'block';
+        win.style.display = 'flex';
+    }
+
+    function closeOS() { win.style.display = 'none'; document.getElementById('os-frame').src = ''; }
+
+    function runAutoProxy() {
+        const container = document.getElementById('toast-container');
+        const msg = document.getElementById('toast-msg');
+        msg.textContent = "Connecting to Public WiFi Proxy...";
+        container.style.left = "20px";
+        setTimeout(() => {
+            msg.textContent = "Uplink Secured: 192.168.1.104";
+            msg.style.background = "rgba(0, 150, 255, 0.9)";
+            setTimeout(() => { container.style.left = "-450px"; }, 3000);
+        }, 1500);
+    }
+
+    setInterval(() => {
+        document.getElementById('time-display').textContent = new Date().toLocaleTimeString();
+    }, 1000);
+</script>
+</body>
+</html>
